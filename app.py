@@ -4,6 +4,7 @@ from nltk.tokenize import word_tokenize
 from nltk import pos_tag
 import speech_recognition as sr
 from textblob import TextBlob
+import random
 
 # Ensure necessary NLTK resources are downloaded
 nltk.download('punkt')
@@ -59,7 +60,7 @@ def analyze_sentiment(text):
 def recognize_speech():
     recognizer = sr.Recognizer()
     with sr.Microphone() as source:
-        st.write("Please speak now...")
+        st.write("Please speak now... (Ensure microphone access is allowed)")
         audio = recognizer.listen(source)
         try:
             # Recognize the speech using Google Web Speech API
@@ -73,71 +74,106 @@ def recognize_speech():
             st.write("Sorry, there was an issue with the speech recognition service.")
             return ""
 
+# List of random questions
+questions = [
+    "What is your favorite hobby?",
+    "Can you describe a memorable event from your life?",
+    "What are your career aspirations?",
+    "What motivates you to succeed?",
+    "Describe a challenging experience you overcame."
+]
+
+# Select a random question
+random_question = random.choice(questions)
+
 # Streamlit app UI
 st.title("Speech Proficiency Tester")
+st.markdown("""
+    This application allows you to record your speech, answer a random question, and get an analysis of your vocabulary and sentiment.
+    Click the button below to start speaking and see the results.
+""")
 
-# Allow user to record speech
-if st.button("Start Speaking"):
+# Ask the random question
+st.subheader("Random Question")
+st.write(f"**Question**: {random_question}")
+
+# Allow user to record speech and respond to the question
+if st.button("Start Speaking", use_container_width=True):
     user_speech = recognize_speech()
 
     if user_speech:
-        # Sentiment Analysis
+        # Sentiment Analysis Section
+        st.subheader("Sentiment Analysis")
         sentiment = analyze_sentiment(user_speech)
-        st.write(f"Sentiment Analysis: {sentiment}")
+        st.write(f"Sentiment: **{sentiment}**")
 
-        # Vocabulary Analysis
+        # Vocabulary Analysis Section
+        st.subheader("Vocabulary Analysis")
         vocabulary_analysis = analyze_vocabulary(user_speech)
-
-        # Display the results of vocabulary analysis
-        st.write(f"Total Words: {vocabulary_analysis['total_words']}")
-        st.write(f"Nouns: {vocabulary_analysis['nouns']}")
-        st.write(f"Verbs: {vocabulary_analysis['verbs']}")
-        st.write(f"Adjectives: {vocabulary_analysis['adjectives']}")
-        st.write(f"Adverbs: {vocabulary_analysis['adverbs']}")
-        st.write(f"Pronouns: {vocabulary_analysis['pronouns']}")
-        st.write(f"Prepositions: {vocabulary_analysis['prepositions']}")
+        
+        with st.expander("View Vocabulary Details"):
+            col1, col2 = st.columns(2)
+            with col1:
+                st.write(f"**Total Words**: {vocabulary_analysis['total_words']}")
+                st.write(f"**Nouns**: {vocabulary_analysis['nouns']}")
+                st.write(f"**Pronouns**: {vocabulary_analysis['pronouns']}")
+                st.write(f"**Prepositions**: {vocabulary_analysis['prepositions']}")
+            with col2:
+                st.write(f"**Verbs**: {vocabulary_analysis['verbs']}")
+                st.write(f"**Adjectives**: {vocabulary_analysis['adjectives']}")
+                st.write(f"**Adverbs**: {vocabulary_analysis['adverbs']}")
 
         # Feedback based on vocabulary analysis
+        st.subheader("Feedback Based on Vocabulary Usage")
+        feedback = []
+
         if vocabulary_analysis["nouns"] > 8:
-            st.write("Excellent vocabulary usage with a wide range of nouns!")
+            feedback.append("Excellent vocabulary usage with a wide range of nouns!")
         elif 5 < vocabulary_analysis["nouns"] <= 8:
-            st.write("Good vocabulary with a decent variety of nouns.")
+            feedback.append("Good vocabulary with a decent variety of nouns.")
         else:
-            st.write("Try to use a wider variety of nouns.")
+            feedback.append("Try to use a wider variety of nouns.")
 
         if vocabulary_analysis["verbs"] > 8:
-            st.write("Outstanding use of verbs! You effectively express action and movement.")
+            feedback.append("Outstanding use of verbs! You effectively express action and movement.")
         elif 5 < vocabulary_analysis["verbs"] <= 8:
-            st.write("Well done! Try adding more dynamic verbs.")
+            feedback.append("Well done! Try adding more dynamic verbs.")
         else:
-            st.write("Consider using more action verbs.")
+            feedback.append("Consider using more action verbs.")
 
         if vocabulary_analysis["adjectives"] > 5:
-            st.write("Great job using adjectives!")
+            feedback.append("Great job using adjectives!")
         elif 3 < vocabulary_analysis["adjectives"] <= 5:
-            st.write("Good use of adjectives. Add more to enhance descriptions.")
+            feedback.append("Good use of adjectives. Add more to enhance descriptions.")
         else:
-            st.write("Try using more adjectives to describe things.")
+            feedback.append("Try using more adjectives to describe things.")
 
         if vocabulary_analysis["adverbs"] > 5:
-            st.write("Your use of adverbs is great!")
+            feedback.append("Your use of adverbs is great!")
         elif 3 < vocabulary_analysis["adverbs"] <= 5:
-            st.write("You're using adverbs well. Consider adding more.")
+            feedback.append("You're using adverbs well. Consider adding more.")
         else:
-            st.write("Adverbs can add depth to your descriptions. Try incorporating more.")
+            feedback.append("Adverbs can add depth to your descriptions. Try incorporating more.")
 
         if vocabulary_analysis["pronouns"] > 3:
-            st.write("You've used pronouns effectively.")
+            feedback.append("You've used pronouns effectively.")
         else:
-            st.write("Try using pronouns to avoid repetition.")
+            feedback.append("Try using pronouns to avoid repetition.")
 
         if vocabulary_analysis["prepositions"] > 3:
-            st.write("Your use of prepositions is good.")
+            feedback.append("Your use of prepositions is good.")
         else:
-            st.write("Consider using more prepositions to clarify relationships.")
+            feedback.append("Consider using more prepositions to clarify relationships.")
+
+        # Display Feedback
+        for item in feedback:
+            st.write(f"- {item}")
 
         # Encourage overall language improvement
         if vocabulary_analysis["total_words"] > 50:
             st.write("You're using a rich vocabulary overall!")
         else:
             st.write("Keep working on expanding your vocabulary.")
+
+        st.markdown("---")
+        st.write("Thank you for using the Speech Proficiency Tester!")
