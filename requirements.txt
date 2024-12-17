@@ -3,4 +3,5 @@ nltk==3.8.1
 textblob==0.15.3
 SpeechRecognition==3.8.1
 torch==2.2.0  # or any compatible version
-PyAudio
+pyaudio==0.2.11
+portaudio==19.6.0
